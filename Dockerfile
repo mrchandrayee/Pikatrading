@@ -36,7 +36,7 @@ RUN chmod +x /code/wait-for-it.sh
 COPY ./pikatrading /code/pikatrading/
 COPY ./config /code/config/
 
-# Install system dependencies for Playwright
+# Install system dependencies and debugging tools
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -51,7 +51,20 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     fonts-liberation \
     xvfb \
+    netcat-traditional \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Add debug script
+RUN echo '#!/bin/bash\n\
+echo "Testing socket connection..."\n\
+echo "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n" | nc -U /code/run/uwsgi.sock\n\
+echo "Socket permissions:"\n\
+ls -l /code/run/uwsgi.sock\n\
+echo "Process list:"\n\
+ps aux | grep uwsgi\n\
+echo "Socket connection test complete."' > /usr/local/bin/test-socket.sh && \
+chmod +x /usr/local/bin/test-socket.sh
 
 # Install Python Playwright
 RUN pip install playwright

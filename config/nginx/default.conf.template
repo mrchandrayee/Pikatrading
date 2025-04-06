@@ -1,36 +1,56 @@
 server {
-    listen 80;
+    listen 80 default_server;
     server_name pikatrading.com;
 
-    # Increase logging for debugging
-    error_log /var/log/nginx/pikatrading-error.log debug;
-    access_log /var/log/nginx/pikatrading-access.log;
+    # Enhanced logging
+    error_log /var/log/nginx/error.log debug;
+    access_log /var/log/nginx/access.log combined buffer=512k flush=1s;
 
     client_max_body_size 4G;
+    
+    # Health check endpoint
+    location = /health {
+        access_log off;
+        add_header Content-Type text/plain;
+        return 200 'healthy\n';
+    }
 
     location /static/ {
         alias /code/pikatrading/static/;
+        access_log off;
+        expires 30d;
     }
 
     location /media/ {
         alias /code/pikatrading/media/;
+        access_log off;
+        expires 30d;
     }
 
     location / {
         include uwsgi_params;
         uwsgi_pass unix:///code/run/uwsgi.sock;
+        
+        # Increased timeouts
         uwsgi_read_timeout 300;
         uwsgi_send_timeout 300;
+        uwsgi_connect_timeout 60;
         
-        # Add debug headers
+        # Debug headers
         add_header X-Debug-Message "Passing to uWSGI" always;
+        add_header X-Socket-Path "/code/run/uwsgi.sock" always;
         
-        # Add error handling
-        error_page 502 /502.html;
+        # Detailed error handling
+        error_page 502 504 = @fallback;
+        
+        # Additional uwsgi parameters
+        uwsgi_param UWSGI_SCHEME $scheme;
+        uwsgi_param SERVER_SOFTWARE nginx/$nginx_version;
     }
 
-    # Custom error pages
-    location = /502.html {
-        return 502 "Bad Gateway - uWSGI connection failed";
+    # Fallback handler
+    location @fallback {
+        add_header Content-Type text/plain;
+        return 502 "Bad Gateway - uWSGI connection failed. Socket: /code/run/uwsgi.sock\n";
     }
 }
