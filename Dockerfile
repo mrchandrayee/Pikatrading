@@ -15,8 +15,9 @@ FROM python:3.12.3
 ENV PYTHONDONTWRITEBYTECODE=1
 # 2. Ensures that the Python stdout and stderr streams are sent straight to the terminal without first being buffered.
 ENV PYTHONUNBUFFERED=1
-# Set work directory
+# Set work directory and Python path
 WORKDIR /code
+ENV PYTHONPATH=/code/pikatrading
 
 # Create necessary user and set permissions
 RUN groupadd -g 33 www-data || true && \

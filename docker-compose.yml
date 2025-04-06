@@ -21,13 +21,12 @@ services:
     tmpfs:
       - /code/pikatrading:uid=1000,gid=33,mode=775
     environment:
+      - PYTHONPATH=/code/pikatrading
       - DJANGO_SETTINGS_MODULE=pikatrading.settings.prod
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      # Add these environment variables for Playwright
       - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-      # Optional: If you need to run headed browsers
       - DISPLAY=:99
       
     depends_on:
@@ -40,25 +39,15 @@ services:
     image: nginx:1.27.2
     restart: always
     volumes:
-      - ./config/nginx:/etc/nginx/templates
+      - ./config/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - .:/code:ro
       - /code/pikatrading:/code/pikatrading:rw
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
     ports:
       - "80:80"
-      - "443:443"
     command: nginx -g 'daemon off;'
     depends_on:
-      - certbot
+      - web
   
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    # Add --staging flag to use Let's Encrypt's staging environment
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --staging --deploy-hook \"docker kill -s HUP nginx\"; sleep 12h & wait $${!}; done;'"
   
   rabbitmq:
     restart: always
@@ -82,8 +71,9 @@ services:
     working_dir: /code/pikatrading
     command: ["/bin/sh", "-c", "celery -A pikatrading worker -l info --pool=solo & celery -A pikatrading beat --loglevel=info"]
     volumes:
-      - .:/code
+      - .:/code:rw
     environment:
+      - PYTHONPATH=/code/pikatrading
       - DJANGO_SETTINGS_MODULE=pikatrading.settings.prod
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
