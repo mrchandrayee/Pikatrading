@@ -12,12 +12,29 @@ server {
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
+# Health check proxy to uWSGI
+location = /health {
+    include uwsgi_params;
+    uwsgi_pass 127.0.0.1:8080;
+    access_log off;
+    
+    # Add timeout for health checks
+    uwsgi_read_timeout 5s;
+    uwsgi_send_timeout 5s;
+    
+    # Add headers for proxy health checks
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    
+    # Error handling
+    error_page 502 504 = @health_fallback;
+}
 
-    location = /health {
-        access_log off;
-        add_header Content-Type text/plain;
-        return 200 'healthy\n';
-    }
+location @health_fallback {
+    return 200 'healthy\n';
+    add_header Content-Type text/plain;
+}
+
 
     client_max_body_size 4G;
 
@@ -34,6 +51,14 @@ server {
     }
 
     location / {
+        include uwsgi_params;
+        
+        # Try HTTP first, fall back to Unix socket
+        uwsgi_pass 127.0.0.1:8080;
+        error_page 502 = @uwsgi_fallback;
+    }
+    
+    location @uwsgi_fallback {
         include uwsgi_params;
         uwsgi_pass unix:///code/run/uwsgi.sock;
         
