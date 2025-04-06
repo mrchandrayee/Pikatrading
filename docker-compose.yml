@@ -19,7 +19,8 @@ services:
     volumes:
       - ./pikatrading/media:/code/pikatrading/media:rw
       - ./pikatrading/static:/code/pikatrading/static:rw
-      - socket-data:/code/run:rw
+    expose:
+      - "8000"
     environment:
       - PYTHONPATH=/code/pikatrading
       - DJANGO_SETTINGS_MODULE=pikatrading.settings.prod
@@ -44,7 +45,6 @@ services:
       - ./config/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./pikatrading/static:/code/pikatrading/static:ro
       - ./pikatrading/media:/code/pikatrading/media:ro
-      - socket-data:/code/run:rw
     ports:
       - "80:80"
     command: nginx -g 'daemon off;'
@@ -85,7 +85,3 @@ services:
     depends_on:
       - rabbitmq
       - web
-
-volumes:
-  socket-data:
-    driver: local
