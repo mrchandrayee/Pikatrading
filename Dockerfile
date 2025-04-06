@@ -29,7 +29,8 @@ RUN pip install --upgrade pip
 COPY requirement.txt /code/
 RUN pip install -r requirement.txt
 # Copy the Django project
-COPY . /code/
+COPY ./pikatrading /code/pikatrading/
+COPY ./config /code/config/
 
 # Install system dependencies for Playwright
 RUN apt-get update && apt-get install -y \
