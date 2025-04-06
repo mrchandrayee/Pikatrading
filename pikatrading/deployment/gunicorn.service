@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon for Pikatrading
+After=network.target
+
+[Service]
+User=your_user
+Group=your_group
+WorkingDirectory=/path/to/your/pikatrading
+ExecStart=/path/to/your/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/path/to/your/pikatrading.sock pikatrading.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

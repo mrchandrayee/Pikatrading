@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-$f4i6t+o%-99o=hm-8p#_368b4merd(1o6#&$w&3hg@7-wu$^g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*','corgi-hip-honestly.ngrok-free.app']
+ALLOWED_HOSTS = ['64.227.153.163', 'localhost', '127.0.0.1']
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
