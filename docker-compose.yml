@@ -19,8 +19,8 @@ services:
     volumes:
       - ./pikatrading/media:/code/pikatrading/media:rw
       - ./pikatrading/static:/code/pikatrading/static:rw
-    expose:
-      - "8000"
+    ports:
+      - "127.0.0.1:8000:8000"  # Expose locally for debugging
     environment:
       - PYTHONPATH=/code/pikatrading
       - DJANGO_SETTINGS_MODULE=pikatrading.settings.prod
@@ -34,6 +34,11 @@ services:
       
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     # Add these capabilities for Playwright
     cap_add:
       - SYS_ADMIN

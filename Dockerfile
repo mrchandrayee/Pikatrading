@@ -53,6 +53,7 @@ RUN apt-get update && apt-get install -y \
     xvfb \
     netcat-traditional \
     curl \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Add debug script
