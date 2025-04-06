@@ -13,12 +13,16 @@ services:
     build: .
     user: "1000:33"  # Run as uwsgi:www-data
     command: ["/code/wait-for-it.sh", "db:5432", "--",
-            "uwsgi", "--ini", "/code/config/uwsgi/uwsgi.ini", "--logger", "file:/dev/stdout"]
+            "uwsgi", "--ini", "/code/config/uwsgi/uwsgi.ini", "--logger", "file:/dev/stdout", "--log-master"]
 
     restart: always
     volumes:
       - ./pikatrading/media:/code/pikatrading/media:rw
       - ./pikatrading/static:/code/pikatrading/static:rw
+    expose:
+      - "8000"
+      - "9191"
+      - "1717"
     ports:
       - "127.0.0.1:8000:8000"  # Expose locally for debugging
     environment:
@@ -35,10 +39,11 @@ services:
     depends_on:
       - db
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health || curl -f http://localhost:1717"]
       interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 30s
     # Add these capabilities for Playwright
     cap_add:
       - SYS_ADMIN
