@@ -37,7 +37,8 @@ server {
     }
 
     location / {
-        proxy_pass http://web:8000;
+        include uwsgi_params;
+        uwsgi_pass unix:///code/run/uwsgi.sock;
         
         # Standard proxy headers
         proxy_set_header Host $host;
