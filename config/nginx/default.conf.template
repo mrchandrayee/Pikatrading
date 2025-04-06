@@ -1,5 +1,5 @@
 upstream pikatrading_app_server {
-    server unix:///code/pikatrading/uwsgi_app.sock fail_timeout=0;
+    server unix:///code/run/uwsgi.sock fail_timeout=0;
 }
 
 server {

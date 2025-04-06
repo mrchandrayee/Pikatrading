@@ -12,12 +12,13 @@ services:
   web:
     build: .
     user: "1000:33"  # Run as uwsgi:www-data
-    command: ["./wait-for-it.sh", "db:5432", "--",
+    command: ["/code/wait-for-it.sh", "db:5432", "--",
             "uwsgi", "--ini", "/code/config/uwsgi/uwsgi.ini"]
 
     restart: always
     volumes:
       - ./pikatrading/media:/code/pikatrading/media:rw
+      - /code/run
       - ./pikatrading/static:/code/pikatrading/static:rw
     environment:
       - PYTHONPATH=/code/pikatrading
@@ -41,6 +42,7 @@ services:
       - ./config/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./pikatrading/static:/code/pikatrading/static:ro
       - ./pikatrading/media:/code/pikatrading/media:ro
+      - /code/run:/code/run:rw
     ports:
       - "80:80"
     command: nginx -g 'daemon off;'

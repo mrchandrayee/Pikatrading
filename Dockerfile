@@ -28,6 +28,10 @@ RUN groupadd -g 33 www-data || true && \
 RUN pip install --upgrade pip
 COPY requirement.txt /code/
 RUN pip install -r requirement.txt
+# Copy wait-for-it script first and make it executable
+COPY wait-for-it.sh /code/
+RUN chmod +x /code/wait-for-it.sh
+
 # Copy the Django project
 COPY ./pikatrading /code/pikatrading/
 COPY ./config /code/config/
@@ -55,13 +59,13 @@ RUN playwright install
 RUN playwright install-deps
 
 # Create directory for socket with proper permissions
-RUN mkdir -p /code/pikatrading && \
-    chown uwsgi:www-data /code/pikatrading && \
-    chmod 775 /code/pikatrading
+RUN mkdir -p /code/run && \
+    chown uwsgi:www-data /code/run && \
+    chmod 775 /code/run
 
 # Add script to handle socket cleanup
 RUN echo '#!/bin/sh\n\
-rm -f /code/pikatrading/uwsgi_app.sock\n\
+rm -f /code/run/uwsgi.sock\n\
 exec "$@"' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
