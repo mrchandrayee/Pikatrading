@@ -29,31 +29,41 @@ server {
 
     location / {
         proxy_pass http://web:8000;
-        proxy_set_header Host $host;
+        
+        # Standard proxy headers
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         
+        # WebSocket support
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        
         # Timeouts
-        proxy_connect_timeout 300;
-        proxy_send_timeout 300;
-        proxy_read_timeout 300;
+        proxy_connect_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
         
         # Debug headers
-        add_header X-Debug-Message "Passing to uWSGI" always;
-        add_header X-Socket-Path "/code/run/uwsgi.sock" always;
+        add_header X-Debug-Message "Proxying to uWSGI" always;
+        add_header X-Backend-Server "web:8000" always;
         
-        # Detailed error handling
+        # Buffering
+        proxy_buffering on;
+        proxy_buffer_size 128k;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+        
+        # Error handling
         error_page 502 504 = @fallback;
-        
-        # Additional uwsgi parameters
-        uwsgi_param UWSGI_SCHEME $scheme;
-        uwsgi_param SERVER_SOFTWARE nginx/$nginx_version;
+        proxy_intercept_errors on;
     }
 
     # Fallback handler
     location @fallback {
-        add_header Content-Type text/plain;
-        return 502 "Bad Gateway - uWSGI connection failed. Socket: /code/run/uwsgi.sock\n";
+        add_header Content-Type application/json;
+        return 502 '{"error": "Bad Gateway", "message": "Failed to connect to backend server", "backend": "web:8000"}';
     }
 }
