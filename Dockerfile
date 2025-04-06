@@ -56,3 +56,15 @@ RUN playwright install-deps
 RUN mkdir -p /code/pikatrading && \
     chown uwsgi:www-data /code/pikatrading && \
     chmod 775 /code/pikatrading
+
+# Add script to handle socket cleanup
+RUN echo '#!/bin/sh\n\
+rm -f /code/pikatrading/uwsgi_app.sock\n\
+exec "$@"' > /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+# Create directory for socket with proper permissions
+RUN mkdir -p /code/pikatrading && \
+    chown uwsgi:www-data /code/pikatrading && \
+    chmod 775 /code/pikatrading

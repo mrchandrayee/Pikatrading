@@ -17,8 +17,9 @@ services:
 
     restart: always
     volumes:
-      - .:/code
-      - /code/pikatrading/uwsgi_app.sock:/code/pikatrading/uwsgi_app.sock
+      - .:/code:rw
+    tmpfs:
+      - /code/pikatrading:uid=1000,gid=33,mode=775
     environment:
       - DJANGO_SETTINGS_MODULE=pikatrading.settings.prod
       - POSTGRES_DB=postgres
@@ -40,7 +41,8 @@ services:
     restart: always
     volumes:
       - ./config/nginx:/etc/nginx/templates
-      - .:/code
+      - .:/code:ro
+      - /code/pikatrading:/code/pikatrading:rw
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     ports:
