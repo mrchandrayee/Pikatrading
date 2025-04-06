@@ -17,6 +17,12 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 # Set work directory
 WORKDIR /code
+
+# Create necessary user and set permissions
+RUN groupadd -g 33 www-data || true && \
+    useradd -u 1000 -g www-data -m -d /home/uwsgi uwsgi && \
+    chown -R uwsgi:www-data /code && \
+    chmod -R g+w /code
 # Install dependencies
 RUN pip install --upgrade pip
 COPY requirement.txt /code/
@@ -46,3 +52,7 @@ RUN pip install playwright
 RUN playwright install
 RUN playwright install-deps
 
+# Create directory for socket with proper permissions
+RUN mkdir -p /code/pikatrading && \
+    chown uwsgi:www-data /code/pikatrading && \
+    chmod 775 /code/pikatrading

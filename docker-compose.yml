@@ -11,12 +11,14 @@ services:
       - POSTGRES_PASSWORD=postgres
   web:
     build: .
+    user: "1000:33"  # Run as uwsgi:www-data
     command: ["./wait-for-it.sh", "db:5432", "--",
             "uwsgi", "--ini", "/code/config/uwsgi/uwsgi.ini"]
 
     restart: always
     volumes:
       - .:/code
+      - /code/pikatrading/uwsgi_app.sock:/code/pikatrading/uwsgi_app.sock
     environment:
       - DJANGO_SETTINGS_MODULE=pikatrading.settings.prod
       - POSTGRES_DB=postgres
