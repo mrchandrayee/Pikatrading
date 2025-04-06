@@ -50,13 +50,14 @@ services:
       - SYS_ADMIN
 
   nginx:
-    image: nginx:1.27.2
+    image: nginx:1.24.0
     restart: always
     volumes:
       - ./config/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./pikatrading/static:/code/pikatrading/static:ro
       - ./pikatrading/media:/code/pikatrading/media:ro
-      - ./pikatrading/ssl:/code/pikatrading/ssl:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
       - uwsgi_sock:/code/run:ro
     ports:
       - "80:80"
@@ -64,6 +65,13 @@ services:
     command: nginx -g 'daemon off;'
     depends_on:
       - web
+      
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
   
   
   rabbitmq:

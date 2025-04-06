@@ -3,7 +3,7 @@
 # Replace these with your actual domain and email
 domains=(pikatrading.com www.pikatrading.com)
 email="raud.boss@gmail.com"
-staging=1 # Set to 1 if you're testing your setup to avoid hitting request limits
+staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 
 # Create required directories
 mkdir -p certbot/conf
@@ -39,4 +39,4 @@ echo "### Reloading nginx ..."
 docker-compose exec nginx nginx -s reload
 
 echo "Certificate created! You can now access your site at https://pikatrading.com"
-echo "Note: You will see a browser warning about the self-signed certificate - this is normal for local development" 
+echo "Note: It may take a few minutes for DNS changes to propagate and SSL to be fully active"
