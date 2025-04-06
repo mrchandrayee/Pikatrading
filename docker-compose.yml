@@ -56,9 +56,11 @@ services:
       - ./config/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./pikatrading/static:/code/pikatrading/static:ro
       - ./pikatrading/media:/code/pikatrading/media:ro
+      - ./pikatrading/ssl:/code/pikatrading/ssl:ro
       - uwsgi_sock:/code/run:ro
     ports:
       - "80:80"
+      - "443:443"
     command: nginx -g 'daemon off;'
     depends_on:
       - web
