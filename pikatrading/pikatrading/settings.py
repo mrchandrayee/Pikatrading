@@ -25,10 +25,17 @@ SECRET_KEY = 'django-insecure-$f4i6t+o%-99o=hm-8p#_368b4merd(1o6#&$w&3hg@7-wu$^g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['64.227.153.163', 'localhost', '127.0.0.1']
+# Added 10.244.186.141 for health check probes
+ALLOWED_HOSTS = ['64.227.153.163', 'localhost', '127.0.0.1', '10.244.186.141']
+
+# Port configuration for the application to listen on
+PORT = 8080  # Port used by readiness/health probes
+
+# Authentication URLs and redirects
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'
-LOGIN_URL = '/login/'
+LOGIN_URL = '/accounts/login/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
 SESSION_COOKIE_AGE = 86400 # time in second for cart before item will be removed
 CART_SESSION_ID = 'cart'
@@ -43,14 +50,37 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sites',
+    
+    # Third-party apps
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.line',
+    
+    # Local apps
     'payment',
     'cart',
     'core',
     'product',
     'order',
     'account',
-    
 ]
+
+# django-allauth configuration
+SITE_ID = 1
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_USERNAME_REQUIRED = False
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -62,12 +92,21 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# django-allauth form configuration
+ACCOUNT_FORMS = {
+    'login': 'core.forms.CustomLoginForm',
+    'signup': 'core.forms.CustomSignupForm',
+}
+
 ROOT_URLCONF = 'pikatrading.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'pikatrading/templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
